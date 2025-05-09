@@ -1,32 +1,27 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/user-cube/kontext/pkg/kubeconfig"
+	"github.com/user-cube/kontext/pkg/ui"
 )
 
 // currentCmd represents the current command
 var currentCmd = &cobra.Command{
 	Use:   "current",
 	Short: "Show current Kubernetes context",
-	Long:  `Display the currently active Kubernetes context from your kubeconfig file.`,
+	Long: `Display the currently active Kubernetes context from your kubeconfig file.
+
+Examples:
+  # Show the current active context
+  kontext current`,
 	Run: func(cmd *cobra.Command, args []string) {
 		currentContext, err := kubeconfig.GetCurrentContext()
 		if err != nil {
-			red := color.New(color.FgRed, color.Bold).SprintFunc()
-			fmt.Printf("%s Error retrieving current context: %v\n", red("✗"), err)
-			os.Exit(1)
+			ui.PrintError("Error retrieving current context", err, true)
 		}
 
-		bold := color.New(color.Bold).SprintFunc()
-		cyan := color.New(color.FgCyan, color.Bold).SprintFunc()
-		green := color.New(color.FgGreen, color.Bold).SprintFunc()
-
-		fmt.Printf("%s %s %s\n", green("→"), bold("Current context:"), cyan(currentContext))
+		ui.PrintCurrentContext(currentContext)
 	},
 }
 

@@ -1,3 +1,11 @@
+// Package kubeconfig provides functions for interacting with Kubernetes configuration
+//
+// This package offers a simplified interface for common operations related to
+// Kubernetes contexts and namespaces, including:
+// - Retrieving available contexts
+// - Getting and setting the current context
+// - Managing namespaces
+// - Connecting to clusters
 package kubeconfig
 
 import (
@@ -6,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/user-cube/kontext/pkg/static"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -13,6 +22,9 @@ import (
 )
 
 // GetKubeConfigPath returns the path to the kubeconfig file
+//
+// This function checks the KUBECONFIG environment variable first,
+// and falls back to the default ~/.kube/config location if not set.
 func GetKubeConfigPath() string {
 	if os.Getenv("KUBECONFIG") != "" {
 		return os.Getenv("KUBECONFIG")
@@ -159,6 +171,9 @@ func SetNamespaceForContext(contextName string, namespace string) error {
 }
 
 // GetNamespaces returns all available namespaces for the current context
+//
+// This function attempts to connect to the cluster and list namespaces.
+// If the connection fails, it returns a set of default namespaces.
 func GetNamespaces() ([]string, error) {
 	return GetNamespacesForContext("")
 }
@@ -198,20 +213,20 @@ func GetNamespacesForContext(contextName string) ([]string, error) {
 	if err != nil {
 		// If we can't connect to the cluster, return some default namespaces
 		// This handles the case where the user might be offline or the cluster is unavailable
-		return []string{"default", "kube-system", "kube-public", "kube-node-lease"}, nil
+		return static.FallBackNamespace, nil
 	}
 
 	// Create the clientset
 	clientset, err := kubernetes.NewForConfig(restConfig)
 	if err != nil {
-		return []string{"default", "kube-system", "kube-public", "kube-node-lease"}, nil
+		return static.FallBackNamespace, nil
 	}
 
 	// Try to list namespaces from the cluster
 	namespaceList, err := clientset.CoreV1().Namespaces().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		// Fall back to default namespaces if there's an error
-		return []string{"default", "kube-system", "kube-public", "kube-node-lease"}, nil
+		return static.FallBackNamespace, nil
 	}
 
 	// Extract namespace names from the response

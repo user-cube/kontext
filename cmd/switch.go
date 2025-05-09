@@ -3,12 +3,11 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"sort"
+	"strings"
 
-	"github.com/fatih/color"
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/user-cube/kontext/pkg/kubeconfig"
+	"github.com/user-cube/kontext/pkg/ui"
 )
 
 // runSwitch contains the main logic for the switch command
@@ -19,16 +18,12 @@ func runSwitch(cmd *cobra.Command, args []string) {
 	// Get available contexts
 	contexts, err := kubeconfig.GetContexts()
 	if err != nil {
-		red := color.New(color.FgRed, color.Bold).SprintFunc()
-		fmt.Printf("%s Error retrieving contexts: %v\n", red("✗"), err)
-		os.Exit(1)
+		ui.PrintError("Error retrieving contexts", err, true)
 	}
 
 	currentContext, err := kubeconfig.GetCurrentContext()
 	if err != nil {
-		red := color.New(color.FgRed, color.Bold).SprintFunc()
-		fmt.Printf("%s Error retrieving current context: %v\n", red("✗"), err)
-		os.Exit(1)
+		ui.PrintError("Error retrieving current context", err, true)
 	}
 
 	// Get the current namespace
@@ -45,34 +40,17 @@ func runSwitch(cmd *cobra.Command, args []string) {
 			contextNames = append(contextNames, name)
 		}
 
-		// Sort context names for consistent display
-		sort.Strings(contextNames)
+		// Sort context names and optionally prioritize current context
+		// Setting the third parameter to true would place current context first
+		// Setting it to false maintains alphabetical order
+		contextNames = ui.SortContexts(contextNames, currentContext, true)
 
-		// Check if we should set namespace after context switch
-		setNS, _ := cmd.Flags().GetBool("set-namespace")
+		// Create the selector and run it
+		selector := ui.CreateContextSelector(contextNames, currentContext)
+		_, selection, err := selector.Run()
 
-		// Prepare selector with enhanced templates and styling
-		templates := &promptui.SelectTemplates{
-			Label:    "{{ \"Select Kubernetes Context:\" | bold }}",
-			Active:   "{{ \"→\" | cyan | bold }} {{ . | cyan | bold }}{{ if eq . \"" + currentContext + "\" }} {{ \"(current)\" | green | bold }}{{ end }}",
-			Inactive: "  {{ . }}{{ if eq . \"" + currentContext + "\" }} {{ \"(current)\" | green }}{{ end }}",
-			Selected: "{{ \"✓\" | green | bold }} {{ \"Selected context:\" | bold }} {{ . | cyan | bold }}",
-			Details:  "{{ \"───────────────────────────────────────\" | faint }}\n{{ \"  Use arrow keys to navigate and Enter to select\" | faint }}",
-		}
-
-		prompt := promptui.Select{
-			Label:     "Context",
-			Items:     contextNames,
-			Templates: templates,
-			Size:      10,
-			// Start with the current context selected
-			CursorPos: getContextPosition(contextNames, currentContext),
-		}
-
-		_, selection, err := prompt.Run()
 		if err != nil {
-			red := color.New(color.FgRed, color.Bold).SprintFunc()
-			fmt.Printf("%s Selection canceled: %v\n", red("✗"), err)
+			ui.PrintError("Selection canceled", err, false)
 			return
 		}
 
@@ -80,27 +58,18 @@ func runSwitch(cmd *cobra.Command, args []string) {
 
 		// Don't switch if selected context is already current
 		if contextName == currentContext {
-			yellow := color.New(color.FgYellow, color.Bold).SprintFunc()
-			fmt.Printf("%s Context '%s' is already selected\n", yellow("!"), contextName)
-
-			// Show current namespace info
-			cyan := color.New(color.FgCyan).SprintFunc()
-			green := color.New(color.FgGreen, color.Bold).SprintFunc()
-			fmt.Printf("%s Current namespace: %s\n", green("→"), cyan(currentNamespace))
+			ui.PrintWarning(fmt.Sprintf("Context '%s' is already selected", contextName))
+			ui.PrintCurrentNamespace(contextName, currentNamespace)
 			return
 		}
 
 		// Switch to the selected context
 		err = kubeconfig.SwitchContext(contextName)
 		if err != nil {
-			red := color.New(color.FgRed, color.Bold).SprintFunc()
-			fmt.Printf("%s Error switching context: %v\n", red("✗"), err)
-			os.Exit(1)
+			ui.PrintError("Error switching context", err, true)
 		}
 
-		green := color.New(color.FgGreen, color.Bold).SprintFunc()
-		cyan := color.New(color.FgCyan).SprintFunc()
-		fmt.Printf("%s Switched to context %s\n", green("✓"), cyan(contextName))
+		ui.PrintSuccess("Switched to context", contextName)
 
 		// Get namespace for the new context
 		targetNamespace, err := kubeconfig.GetNamespaceForContext(contextName)
@@ -109,39 +78,42 @@ func runSwitch(cmd *cobra.Command, args []string) {
 			targetNamespace = "default"
 		}
 
-		fmt.Printf("%s Namespace: %s\n", green("→"), cyan(targetNamespace))
+		ui.PrintSuccess("Namespace", targetNamespace)
 
-		// If requested, also let the user select a namespace
-		if setNS {
-			// We're already in the new context
-			nsCmd.Run(nsCmd, []string{})
-		}
+		// The namespace selector will be handled by the caller if needed
+		// We don't want to call it here to avoid duplicate namespace selection
 	} else {
 		contextName = args[0]
 
+		// Check if the context exists
+		if _, exists := contexts[contextName]; !exists {
+			// Get available context names for the error message
+			contextNames := make([]string, 0, len(contexts))
+			for name := range contexts {
+				contextNames = append(contextNames, name)
+			}
+			// Sort contexts with the current context highlighted
+			contextNames = ui.SortContexts(contextNames, currentContext, false)
+
+			ui.PrintError(fmt.Sprintf("Context '%s' does not exist", contextName), nil, false)
+			ui.PrintContextList(contextNames, currentContext)
+			os.Exit(1)
+		}
+
 		// Don't switch if selected context is already current
 		if contextName == currentContext {
-			yellow := color.New(color.FgYellow, color.Bold).SprintFunc()
-			fmt.Printf("%s Context '%s' is already selected\n", yellow("!"), contextName)
-
-			// Show current namespace info
-			cyan := color.New(color.FgCyan).SprintFunc()
-			green := color.New(color.FgGreen, color.Bold).SprintFunc()
-			fmt.Printf("%s Current namespace: %s\n", green("→"), cyan(currentNamespace))
+			ui.PrintWarning(fmt.Sprintf("Context '%s' is already selected", contextName))
+			ui.PrintCurrentNamespace(contextName, currentNamespace)
 			return
 		}
 
 		// Switch to the selected context
 		err = kubeconfig.SwitchContext(contextName)
 		if err != nil {
-			red := color.New(color.FgRed, color.Bold).SprintFunc()
-			fmt.Printf("%s Error switching context: %v\n", red("✗"), err)
-			os.Exit(1)
+			ui.PrintError("Error switching context", err, true)
 		}
 
-		green := color.New(color.FgGreen, color.Bold).SprintFunc()
-		cyan := color.New(color.FgCyan).SprintFunc()
-		fmt.Printf("%s Switched to context %s\n", green("✓"), cyan(contextName))
+		ui.PrintSuccess("Switched to context", contextName)
 
 		// Get namespace for the new context
 		targetNamespace, err := kubeconfig.GetNamespaceForContext(contextName)
@@ -150,35 +122,124 @@ func runSwitch(cmd *cobra.Command, args []string) {
 			targetNamespace = "default"
 		}
 
-		fmt.Printf("%s Namespace: %s\n", green("→"), cyan(targetNamespace))
+		ui.PrintSuccess("Namespace", targetNamespace)
 
-		// If requested, also let the user select a namespace
-		setNS, _ := cmd.Flags().GetBool("set-namespace")
-		if setNS {
-			// We're already in the new context
-			nsCmd.Run(nsCmd, []string{})
-		}
+		// The namespace selector will be handled by the caller if needed
+		// We don't want to call it here to avoid duplicate namespace selection
 	}
 }
 
 // switchCmd represents the switch command
 var switchCmd = &cobra.Command{
-	Use:   "switch [context]",
+	Use:   "switch [context] [namespace]",
 	Short: "Switch to a specific Kubernetes context",
 	Long: `Switch to a specific Kubernetes context in your kubeconfig file.
-If no context is provided, an interactive selection menu will be displayed.`,
-	ValidArgsFunction: contextCompletion,
-	Run:               runSwitch,
-}
+If no context is provided, an interactive selection menu will be displayed.
 
-// Helper function to find the position of the current context in the list
-func getContextPosition(contexts []string, currentContext string) int {
-	for i, ctx := range contexts {
-		if ctx == currentContext {
-			return i
+Examples:
+  # Show interactive context selector
+  kontext switch
+  
+  # Switch to specific context by name
+  kontext switch my-context
+  
+  # Switch to context and then select namespace interactively
+  kontext switch -n
+  
+  # Switch to specific context and then select namespace interactively
+  kontext switch my-context -n
+  
+  # Switch to specific context and directly set a namespace
+  kontext switch my-context -n my-namespace
+  
+  # The root command also acts as an alias to switch
+  kontext
+  kontext my-context
+  kontext -n
+  kontext my-context -n
+  kontext my-context -n my-namespace`,
+	ValidArgsFunction: contextCompletion,
+	Run: func(cmd *cobra.Command, args []string) {
+		// Get the list of non-flag arguments (context and possibly namespace)
+		nonFlagArgs := []string{}
+		for _, arg := range args {
+			// Check if this arg looks like a flag
+			if !strings.HasPrefix(arg, "-") {
+				nonFlagArgs = append(nonFlagArgs, arg)
+			}
 		}
-	}
-	return 0
+
+		// Check if a namespace is specified after the -n flag
+		setNS, _ := cmd.Flags().GetBool("set-namespace")
+		var namespaceArg string
+
+		// Get all args that might contain the -n flag and a namespace argument
+		allArgs := os.Args
+		if setNS {
+			// Look for a namespace argument after the -n flag
+			for i, arg := range allArgs {
+				if (arg == "-n" || arg == "--set-namespace") && i+1 < len(allArgs) && !strings.HasPrefix(allArgs[i+1], "-") {
+					// Check if the next arg isn't another flag and isn't part of the context name
+					if len(nonFlagArgs) == 0 || allArgs[i+1] != nonFlagArgs[0] {
+						namespaceArg = allArgs[i+1]
+						break
+					}
+				}
+			}
+		}
+
+		// If we found a namespace arg, run with it; otherwise use the normal runSwitch
+		if namespaceArg != "" {
+			// If we have a context, switch to it first, then set the namespace directly
+			if len(nonFlagArgs) > 0 {
+				// Create args with just the context
+				contextArgs := []string{nonFlagArgs[0]}
+				// Call runSwitch with just the context
+				runSwitch(cmd, contextArgs)
+				
+				// Before setting the namespace, check if it exists
+				newContext, err := kubeconfig.GetCurrentContext()
+				if err != nil {
+					ui.PrintError("Error retrieving current context", err, true)
+				}
+				
+				namespaces, err := kubeconfig.GetNamespaces()
+				if err != nil {
+					ui.PrintError("Error retrieving namespaces", err, true)
+				}
+				
+				// Check if the specified namespace exists
+				namespaceExists := false
+				for _, ns := range namespaces {
+					if ns == namespaceArg {
+						namespaceExists = true
+						break
+					}
+				}
+				
+				if !namespaceExists {
+					ui.PrintWarning(fmt.Sprintf("Namespace '%s' does not exist in context '%s'", namespaceArg, newContext))
+					// Continue anyway since the user explicitly requested this namespace
+				}
+				
+				// Then set the namespace directly
+				nsCmd.Run(nsCmd, []string{namespaceArg})
+			} else {
+				// If no context specified, show context selector and then set namespace
+				runSwitch(cmd, []string{})
+				nsCmd.Run(nsCmd, []string{namespaceArg})
+			}
+		} else if setNS {
+			// No namespace argument but -n flag was specified
+			// First switch context if needed
+			runSwitch(cmd, nonFlagArgs)
+			// Then run namespace selector
+			nsCmd.Run(nsCmd, []string{})
+		} else {
+			// No namespace argument found, use normal flow
+			runSwitch(cmd, nonFlagArgs)
+		}
+	},
 }
 
 // contextCompletion provides autocompletion for context names

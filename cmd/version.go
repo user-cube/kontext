@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	"fmt"
 	"runtime"
 
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"github.com/user-cube/kontext/pkg/ui"
 )
 
 // Version information
@@ -19,16 +18,17 @@ var (
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version information of kontext",
-	Long:  `Display the version, build date, and git commit of your kontext installation.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		bold := color.New(color.Bold).SprintFunc()
-		cyan := color.New(color.FgCyan).SprintFunc()
+	Long: `Display the version, build date, and git commit of your kontext installation.
 
-		fmt.Printf("%s %s\n", bold("Kontext:"), cyan(Version))
-		fmt.Printf("%s %s\n", bold("Git Commit:"), GitCommit)
-		fmt.Printf("%s %s\n", bold("Built:"), BuildDate)
-		fmt.Printf("%s %s/%s\n", bold("Platform:"), runtime.GOOS, runtime.GOARCH)
-		fmt.Printf("%s %s\n", bold("Go Version:"), runtime.Version())
+Examples:
+  # Show version information
+  kontext version`,
+	Run: func(cmd *cobra.Command, args []string) {
+		ui.PrintInfo("Kontext", Version)
+		ui.PrintInfo("Git Commit", GitCommit)
+		ui.PrintInfo("Built", BuildDate)
+		ui.PrintInfo("Platform", runtime.GOOS+"/"+runtime.GOARCH)
+		ui.PrintInfo("Go Version", runtime.Version())
 	},
 }
 
