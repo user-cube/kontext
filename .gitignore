@@ -27,3 +27,7 @@ go.work.sum
 # Binaries
 kontext
 dist/
+
+# Demo images
+demo/kontext.gif
+demo/kontext.cast
