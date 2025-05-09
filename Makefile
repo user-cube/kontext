@@ -45,7 +45,7 @@ release: clean
 		echo "Error: goreleaser not found. Install with 'go install github.com/goreleaser/goreleaser@latest'"; \
 		exit 1; \
 	fi
-	@VERSION=$(VERSION) goreleaser release --clean
+	@VERSION=$(VERSION) GIT_COMMIT=$(COMMIT) BUILD_DATE=$(BUILD_DATE) goreleaser release --clean
 
 .PHONY: release-snapshot
 release-snapshot: clean
@@ -54,7 +54,17 @@ release-snapshot: clean
 		echo "Error: goreleaser not found. Install with 'go install github.com/goreleaser/goreleaser@latest'"; \
 		exit 1; \
 	fi
-	@VERSION=$(VERSION) goreleaser release --snapshot --clean
+	@VERSION=$(VERSION) GIT_COMMIT=$(COMMIT) BUILD_DATE=$(BUILD_DATE) goreleaser release --snapshot --clean
+
+.PHONY: build-release
+build-release: clean
+	@echo "Building release version of kontext $(VERSION) ($(COMMIT))"
+	@go build $(LDFLAGS) -o kontext main.go
+	@echo "Built kontext binary with release information"
+	@echo "Version:    $(VERSION)"
+	@echo "Commit:     $(COMMIT)"
+	@echo "Build Date: $(BUILD_DATE)"
+	@echo "Run ./kontext version to verify"
 
 .PHONY: help
 help:
@@ -69,4 +79,5 @@ help:
 	@echo "  lint             - Run linters (requires golangci-lint)"
 	@echo "  release          - Create a full release using GoReleaser"
 	@echo "  release-snapshot - Create a local release snapshot for testing (no publish)"
+	@echo "  build-release    - Build kontext binary with release information"
 	@echo "  help             - Show this help message"
