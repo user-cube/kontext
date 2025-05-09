@@ -73,10 +73,25 @@ func PrintWarning(msg string, details ...string) {
 	fmt.Println()
 }
 
-// PrintInfo prints a formatted information message
+// PrintInfo prints a formatted information label and value
 func PrintInfo(label string, value string) {
 	colors := NewColors()
-	fmt.Printf("%s %s\n", colors.Bold(label+":"), colors.Cyan(value))
+	fmt.Printf("%s: %s\n", colors.Bold(label), value)
+}
+
+// PrintNote prints a formatted note message with an info icon
+func PrintNote(msg string, details ...string) {
+	colors := NewColors()
+	// Using blue color with info icon for notes
+	blue := color.New(color.FgBlue, color.Bold).SprintFunc()
+	fmt.Printf("%s %s", blue("ℹ"), blue("Note:"))
+
+	fmt.Printf(" %s", msg)
+
+	for _, detail := range details {
+		fmt.Printf(" %s", colors.Cyan(detail))
+	}
+	fmt.Println()
 }
 
 // PrintCurrentContext displays the current context information
@@ -111,7 +126,7 @@ func CreateContextSelector(contexts []string, currentContext string) *promptui.S
 
 	// Log statement to help debugging cursor position issues
 	if cursorPos == 0 && currentContext != "" && len(contexts) > 0 && contexts[0] != currentContext {
-		fmt.Printf("Note: Current context '%s' not found in sorted context list, defaulting to first item\n", currentContext)
+		PrintNote(fmt.Sprintf("Current context '%s' not found in sorted context list, defaulting to first item", currentContext))
 	}
 
 	return &promptui.Select{
@@ -143,7 +158,7 @@ func CreateNamespaceSelector(namespaces []string, currentNamespace string, curre
 
 	// Log statement to help debugging cursor position issues
 	if cursorPos == 0 && currentNamespace != "" && len(namespaces) > 0 && namespaces[0] != currentNamespace {
-		fmt.Printf("Note: Current namespace '%s' not found in sorted namespace list, defaulting to first item\n", currentNamespace)
+		PrintNote(fmt.Sprintf("Current namespace '%s' not found in sorted namespace list, defaulting to first item", currentNamespace))
 	}
 
 	return &promptui.Select{
@@ -184,11 +199,9 @@ func SortContexts(contextNames []string, currentContext string, prioritizeCurren
 				found = true
 				break
 			}
-		}
-
-		// If current context wasn't found in the list, log a debug message
+		} // If current context wasn't found in the list, log a debug message
 		if !found {
-			fmt.Printf("Note: Current context '%s' not found in context list\n", currentContext)
+			PrintNote(fmt.Sprintf("Current context '%s' not found in context list", currentContext))
 		}
 	}
 
@@ -224,11 +237,9 @@ func SortNamespaces(namespaces []string, currentNamespace string, prioritizeCurr
 				found = true
 				break
 			}
-		}
-
-		// If current namespace wasn't found in the list, log a debug message
+		} // If current namespace wasn't found in the list, log a debug message
 		if !found {
-			fmt.Printf("Note: Current namespace '%s' not found in namespace list\n", currentNamespace)
+			PrintNote(fmt.Sprintf("Current namespace '%s' not found in namespace list", currentNamespace))
 		}
 	}
 

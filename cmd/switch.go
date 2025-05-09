@@ -218,7 +218,8 @@ Examples:
 				}
 
 				if !namespaceExists {
-					ui.PrintWarning(fmt.Sprintf("Namespace '%s' does not exist in context '%s'", namespaceArg, newContext))
+					ui.PrintNote(fmt.Sprintf("Namespace '%s' does not exist in context '%s'", namespaceArg, newContext),
+						"(continuing with the requested namespace)")
 					// Continue anyway since the user explicitly requested this namespace
 				}
 
