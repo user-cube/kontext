@@ -2,6 +2,8 @@
 
 A simple CLI tool for managing Kubernetes contexts with ease.
 
+![demo](./demo/kontext-demo.gif)
+
 ## Overview
 
 Kontext helps you manage your Kubernetes contexts efficiently with a simple command-line interface. It allows you to:
