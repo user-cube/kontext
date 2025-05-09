@@ -1,8 +1,4 @@
 #!/bin/bash
-echo "kontext ns --help"
-kontext ns -h
-sleep 2
-clear
 echo "kontext"
 kontext
 sleep 2
