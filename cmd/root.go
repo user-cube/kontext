@@ -67,18 +67,18 @@ Examples:
 				contextArgs := []string{nonFlagArgs[0]}
 				// Call runSwitch with just the context
 				runSwitch(cmd, contextArgs)
-				
+
 				// Before setting the namespace, check if it exists
 				newContext, err := kubeconfig.GetCurrentContext()
 				if err != nil {
 					ui.PrintError("Error retrieving current context", err, true)
 				}
-				
+
 				namespaces, err := kubeconfig.GetNamespaces()
 				if err != nil {
 					ui.PrintError("Error retrieving namespaces", err, true)
 				}
-				
+
 				// Check if the specified namespace exists
 				namespaceExists := false
 				for _, ns := range namespaces {
@@ -87,12 +87,12 @@ Examples:
 						break
 					}
 				}
-				
+
 				if !namespaceExists {
 					ui.PrintWarning(fmt.Sprintf("Namespace '%s' does not exist in context '%s'", namespaceArg, newContext))
 					// Continue anyway since the user explicitly requested this namespace
 				}
-				
+
 				// Then set the namespace directly
 				nsCmd.Run(nsCmd, []string{namespaceArg})
 			} else {

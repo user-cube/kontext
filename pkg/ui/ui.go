@@ -163,14 +163,14 @@ func SortContexts(contextNames []string, currentContext string, prioritizeCurren
 	if len(contextNames) == 0 {
 		return contextNames
 	}
-	
+
 	// Make a copy of the slice to avoid modifying the original
 	sorted := make([]string, len(contextNames))
 	copy(sorted, contextNames)
-	
+
 	// Sort alphabetically first
 	sort.Strings(sorted)
-	
+
 	// If requested, move current context to the front
 	if prioritizeCurrent && currentContext != "" {
 		found := false
@@ -185,13 +185,13 @@ func SortContexts(contextNames []string, currentContext string, prioritizeCurren
 				break
 			}
 		}
-		
+
 		// If current context wasn't found in the list, log a debug message
 		if !found {
 			fmt.Printf("Note: Current context '%s' not found in context list\n", currentContext)
 		}
 	}
-	
+
 	return sorted
 }
 
@@ -203,14 +203,14 @@ func SortNamespaces(namespaces []string, currentNamespace string, prioritizeCurr
 	if len(namespaces) == 0 {
 		return namespaces
 	}
-	
+
 	// Make a copy of the slice to avoid modifying the original
 	sorted := make([]string, len(namespaces))
 	copy(sorted, namespaces)
-	
+
 	// Sort alphabetically first
 	sort.Strings(sorted)
-	
+
 	// If requested, move current namespace to the front
 	if prioritizeCurrent && currentNamespace != "" {
 		found := false
@@ -225,13 +225,13 @@ func SortNamespaces(namespaces []string, currentNamespace string, prioritizeCurr
 				break
 			}
 		}
-		
+
 		// If current namespace wasn't found in the list, log a debug message
 		if !found {
 			fmt.Printf("Note: Current namespace '%s' not found in namespace list\n", currentNamespace)
 		}
 	}
-	
+
 	return sorted
 }
 
