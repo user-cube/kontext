@@ -14,7 +14,7 @@ builds:
 - env:
   - CGO_ENABLED=0
   ldflags:
-  - -s -w -X github.com/user-cube/kontext/cmd.Version={{ .Env.VERSION }} -X github.com/user-cube/kontext/cmd.GitCommit={{.ShortCommit}} -X github.com/user-cube/kontext/cmd.BuildDate={{.Date}}
+  - -s -w -X github.com/user-cube/kontext/cmd.Version={{ .Env.VERSION }} -X github.com/user-cube/kontext/cmd.GitCommit={{ .Env.GIT_COMMIT }} -X github.com/user-cube/kontext/cmd.BuildDate={{ .Env.BUILD_DATE }}
   goos:
   - linux
   - darwin
