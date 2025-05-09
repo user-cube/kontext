@@ -103,7 +103,3 @@ echo 'source <(kontext completion zsh)' >> ~/.zshrc
 ```bash
 kontext completion fish > ~/.config/fish/completions/kontext.fish
 ```
-
-## License
-
-See the [LICENSE](LICENSE) file for details.
