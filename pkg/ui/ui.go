@@ -270,3 +270,23 @@ func PrintContextList(contextNames []string, currentContext string) {
 		}
 	}
 }
+
+// ConfirmAction shows a yes/no confirmation prompt for potentially destructive actions.
+// It returns true if the user confirms, false if the user cancels.
+func ConfirmAction(message string) (bool, error) {
+	prompt := promptui.Prompt{
+		Label:     message,
+		IsConfirm: true,
+	}
+
+	_, err := prompt.Run()
+	if err != nil {
+		// When IsConfirm is true, promptui returns ErrAbort on "no"/cancel.
+		if err == promptui.ErrAbort {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
+}
