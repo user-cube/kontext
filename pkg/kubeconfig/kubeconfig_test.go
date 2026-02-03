@@ -80,13 +80,15 @@ func TestGetKubeConfigPath(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Save original value
 			originalEnv := os.Getenv("KUBECONFIG")
-			defer os.Setenv("KUBECONFIG", originalEnv)
+			defer func() {
+				_ = os.Setenv("KUBECONFIG", originalEnv)
+			}()
 
 			// Set test environment
 			if tt.kubeconfigEnv != "" {
-				os.Setenv("KUBECONFIG", tt.kubeconfigEnv)
+				_ = os.Setenv("KUBECONFIG", tt.kubeconfigEnv)
 			} else {
-				os.Unsetenv("KUBECONFIG")
+				_ = os.Unsetenv("KUBECONFIG")
 			}
 
 			path := GetKubeConfigPath()
@@ -99,13 +101,17 @@ func TestGetKubeConfigPath(t *testing.T) {
 
 func TestGetKubeConfig(t *testing.T) {
 	configPath, expectedConfig := createTestKubeConfig(t)
-	defer os.RemoveAll(filepath.Dir(configPath))
+	defer func() {
+		_ = os.RemoveAll(filepath.Dir(configPath))
+	}()
 
 	// Save original env
 	originalEnv := os.Getenv("KUBECONFIG")
-	defer os.Setenv("KUBECONFIG", originalEnv)
+	defer func() {
+		_ = os.Setenv("KUBECONFIG", originalEnv)
+	}()
 
-	os.Setenv("KUBECONFIG", configPath)
+	_ = os.Setenv("KUBECONFIG", configPath)
 
 	config, err := GetKubeConfig()
 	if err != nil {
@@ -129,12 +135,16 @@ func TestGetKubeConfig(t *testing.T) {
 
 func TestGetContexts(t *testing.T) {
 	configPath, expectedConfig := createTestKubeConfig(t)
-	defer os.RemoveAll(filepath.Dir(configPath))
+	defer func() {
+		_ = os.RemoveAll(filepath.Dir(configPath))
+	}()
 
 	originalEnv := os.Getenv("KUBECONFIG")
-	defer os.Setenv("KUBECONFIG", originalEnv)
+	defer func() {
+		_ = os.Setenv("KUBECONFIG", originalEnv)
+	}()
 
-	os.Setenv("KUBECONFIG", configPath)
+	_ = os.Setenv("KUBECONFIG", configPath)
 
 	contexts, err := GetContexts()
 	if err != nil {
@@ -155,12 +165,16 @@ func TestGetContexts(t *testing.T) {
 
 func TestGetCurrentContext(t *testing.T) {
 	configPath, expectedConfig := createTestKubeConfig(t)
-	defer os.RemoveAll(filepath.Dir(configPath))
+	defer func() {
+		_ = os.RemoveAll(filepath.Dir(configPath))
+	}()
 
 	originalEnv := os.Getenv("KUBECONFIG")
-	defer os.Setenv("KUBECONFIG", originalEnv)
+	defer func() {
+		_ = os.Setenv("KUBECONFIG", originalEnv)
+	}()
 
-	os.Setenv("KUBECONFIG", configPath)
+	_ = os.Setenv("KUBECONFIG", configPath)
 
 	current, err := GetCurrentContext()
 	if err != nil {
@@ -174,12 +188,16 @@ func TestGetCurrentContext(t *testing.T) {
 
 func TestSwitchContext(t *testing.T) {
 	configPath, _ := createTestKubeConfig(t)
-	defer os.RemoveAll(filepath.Dir(configPath))
+	defer func() {
+		_ = os.RemoveAll(filepath.Dir(configPath))
+	}()
 
 	originalEnv := os.Getenv("KUBECONFIG")
-	defer os.Setenv("KUBECONFIG", originalEnv)
+	defer func() {
+		_ = os.Setenv("KUBECONFIG", originalEnv)
+	}()
 
-	os.Setenv("KUBECONFIG", configPath)
+	_ = os.Setenv("KUBECONFIG", configPath)
 
 	tests := []struct {
 		name        string
@@ -279,12 +297,16 @@ func TestDeleteContext(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			configPath, _ := createTestKubeConfig(t)
-			defer os.RemoveAll(filepath.Dir(configPath))
+			defer func() {
+				_ = os.RemoveAll(filepath.Dir(configPath))
+			}()
 
 			originalEnv := os.Getenv("KUBECONFIG")
-			defer os.Setenv("KUBECONFIG", originalEnv)
+			defer func() {
+				_ = os.Setenv("KUBECONFIG", originalEnv)
+			}()
 
-			os.Setenv("KUBECONFIG", configPath)
+			_ = os.Setenv("KUBECONFIG", configPath)
 
 			// Set initial current context
 			if err := SwitchContext(tt.initialCurrent); err != nil {
@@ -339,12 +361,16 @@ func TestDeleteContext(t *testing.T) {
 
 func TestGetCurrentNamespace(t *testing.T) {
 	configPath, _ := createTestKubeConfig(t)
-	defer os.RemoveAll(filepath.Dir(configPath))
+	defer func() {
+		_ = os.RemoveAll(filepath.Dir(configPath))
+	}()
 
 	originalEnv := os.Getenv("KUBECONFIG")
-	defer os.Setenv("KUBECONFIG", originalEnv)
+	defer func() {
+		_ = os.Setenv("KUBECONFIG", originalEnv)
+	}()
 
-	os.Setenv("KUBECONFIG", configPath)
+	_ = os.Setenv("KUBECONFIG", configPath)
 
 	tests := []struct {
 		name        string
@@ -386,12 +412,16 @@ func TestGetCurrentNamespace(t *testing.T) {
 
 func TestGetNamespaceForContext(t *testing.T) {
 	configPath, _ := createTestKubeConfig(t)
-	defer os.RemoveAll(filepath.Dir(configPath))
+	defer func() {
+		_ = os.RemoveAll(filepath.Dir(configPath))
+	}()
 
 	originalEnv := os.Getenv("KUBECONFIG")
-	defer os.Setenv("KUBECONFIG", originalEnv)
+	defer func() {
+		_ = os.Setenv("KUBECONFIG", originalEnv)
+	}()
 
-	os.Setenv("KUBECONFIG", configPath)
+	_ = os.Setenv("KUBECONFIG", configPath)
 
 	tests := []struct {
 		name        string
@@ -435,12 +465,16 @@ func TestGetNamespaceForContext(t *testing.T) {
 
 func TestSetNamespace(t *testing.T) {
 	configPath, _ := createTestKubeConfig(t)
-	defer os.RemoveAll(filepath.Dir(configPath))
+	defer func() {
+		_ = os.RemoveAll(filepath.Dir(configPath))
+	}()
 
 	originalEnv := os.Getenv("KUBECONFIG")
-	defer os.Setenv("KUBECONFIG", originalEnv)
+	defer func() {
+		_ = os.Setenv("KUBECONFIG", originalEnv)
+	}()
 
-	os.Setenv("KUBECONFIG", configPath)
+	_ = os.Setenv("KUBECONFIG", configPath)
 
 	// Set current context
 	if err := SwitchContext("context1"); err != nil {
@@ -490,12 +524,16 @@ func TestSetNamespace(t *testing.T) {
 
 func TestSetNamespaceForContext(t *testing.T) {
 	configPath, _ := createTestKubeConfig(t)
-	defer os.RemoveAll(filepath.Dir(configPath))
+	defer func() {
+		_ = os.RemoveAll(filepath.Dir(configPath))
+	}()
 
 	originalEnv := os.Getenv("KUBECONFIG")
-	defer os.Setenv("KUBECONFIG", originalEnv)
+	defer func() {
+		_ = os.Setenv("KUBECONFIG", originalEnv)
+	}()
 
-	os.Setenv("KUBECONFIG", configPath)
+	_ = os.Setenv("KUBECONFIG", configPath)
 
 	tests := []struct {
 		name        string
