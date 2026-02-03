@@ -85,6 +85,78 @@ func SwitchContext(contextName string) error {
 	return nil
 }
 
+// DeleteContext removes the specified context from the kubeconfig.
+// If the deleted context is the current context, the current context will be unset.
+// Any clusters or authInfos that are no longer referenced by any remaining context
+// will also be removed to keep the config clean.
+func DeleteContext(contextName string) error {
+	configPath := GetKubeConfigPath()
+	config, err := GetKubeConfig()
+	if err != nil {
+		return err
+	}
+
+	// Check if the context exists
+	ctx, exists := config.Contexts[contextName]
+	if !exists {
+		return fmt.Errorf("context '%s' does not exist", contextName)
+	}
+
+	// Track associated cluster and auth info so we can clean them up if unused
+	clusterName := ctx.Cluster
+	authInfoName := ctx.AuthInfo
+
+	// Delete the context
+	delete(config.Contexts, contextName)
+
+	// Unset current context if it was the one being deleted
+	if config.CurrentContext == contextName {
+		config.CurrentContext = ""
+	}
+
+	// Helper to check if a cluster/authInfo is still referenced by any context
+	isClusterReferenced := func(name string) bool {
+		if name == "" {
+			return false
+		}
+		for _, c := range config.Contexts {
+			if c != nil && c.Cluster == name {
+				return true
+			}
+		}
+		return false
+	}
+
+	isAuthInfoReferenced := func(name string) bool {
+		if name == "" {
+			return false
+		}
+		for _, c := range config.Contexts {
+			if c != nil && c.AuthInfo == name {
+				return true
+			}
+		}
+		return false
+	}
+
+	// Clean up cluster if no longer referenced
+	if clusterName != "" && !isClusterReferenced(clusterName) {
+		delete(config.Clusters, clusterName)
+	}
+
+	// Clean up authInfo if no longer referenced
+	if authInfoName != "" && !isAuthInfoReferenced(authInfoName) {
+		delete(config.AuthInfos, authInfoName)
+	}
+
+	// Save the updated config
+	if err := clientcmd.WriteToFile(*config, configPath); err != nil {
+		return fmt.Errorf("error saving kubeconfig: %w", err)
+	}
+
+	return nil
+}
+
 // GetCurrentNamespace returns the namespace set for the current context
 func GetCurrentNamespace() (string, error) {
 	config, err := GetKubeConfig()

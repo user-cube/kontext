@@ -179,6 +179,21 @@ kontext my-context
 kontext my-context -n
 ```
 
+### Delete a Context
+
+Delete a Kubernetes context from your kubeconfig:
+
+```bash
+# Delete a context interactively
+kontext delete
+
+# Delete a specific context by name
+kontext delete my-context
+kontext rm my-context
+```
+
+You will be asked for confirmation before the context is removed.
+
 ## Shell Completion
 
 To enable shell completion:
@@ -211,6 +226,7 @@ The project is organized into the following packages:
   - `namespace.go` - Namespace management
   - `root.go` - Root command setup
   - `switch.go` - Context switching
+  - `delete.go` - Delete contexts
   - `version.go` - Version info
 
 - **pkg/** - Reusable packages
