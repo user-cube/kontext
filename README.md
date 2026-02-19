@@ -16,6 +16,15 @@ Kontext helps you manage your Kubernetes contexts efficiently with a simple comm
 
 ## Installation
 
+### Homebrew
+
+```bash
+brew tap user-cube/tap
+brew install kontext
+```
+
+### Go
+
 ```bash
 go install github.com/user-cube/kontext@latest
 ```
