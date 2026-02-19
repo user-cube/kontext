@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/user-cube/kontext/compare/v1.3.0...v1.3.1) (2026-02-19)
+
+
+### Bug Fixes
+
+* fix package name ([35a6f3e](https://github.com/user-cube/kontext/commit/35a6f3efe32a12ff4084fe42279b348b7fdc0d8d))
+
 # [1.3.0](https://github.com/user-cube/kontext/compare/v1.2.0...v1.3.0) (2026-02-19)
 
 
