@@ -2,8 +2,7 @@ name: Actionlint
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   contents: read
@@ -11,12 +10,4 @@ permissions:
 
 jobs:
   actionlint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: actionlint
-        uses: reviewdog/action-actionlint@v1
-        with:
-          reporter: github-pr-review
+    uses: user-cube/reusable-cicd/.github/workflows/actionlint.yml@main

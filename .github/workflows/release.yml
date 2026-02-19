@@ -3,81 +3,18 @@ name: Release Kontext
 
 on:
   push:
-    # run only against semver tags
-    branches:
-      - main
-
-concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
+    branches: [main]
 
 permissions:
   contents: write
 
 jobs:
   release:
-    runs-on: ubuntu-latest
-    outputs:
-      new-release: ${{ steps.semantic.outputs.new_release_published }}
-      version: ${{ steps.semantic.outputs.new_release_version }}
-    steps:
-      - uses: actions/create-github-app-token@v2
-        id: app
-        with:
-          app-id: ${{ secrets.DEVOPS_BUDDY_APP_ID }}
-          private-key: ${{ secrets.DEVOPS_BUDDY_PRIVATE_KEY }}
-
-      - name: Setup Git (bot da App)
-        run: |
-          git config --global user.name "${{ steps.app.outputs.app-slug }}[bot]"
-          git config --global user.email "${{ steps.app.outputs.app-slug }}[bot]@users.noreply.github.com"
-
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          token: ${{ steps.app.outputs.token }}
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: "24"
-
-      - id: semantic
-        uses: cycjimmy/semantic-release-action@v4
-        with:
-          extra_plugins: |
-            @semantic-release/changelog
-            @semantic-release/git
-        env:
-          GITHUB_TOKEN: ${{ steps.app.outputs.token }}
-
-  goreleaser:
-    runs-on: ubuntu-latest
-    needs: release
-    if: needs.release.outputs.new-release == 'true'
-    steps:
-      - uses: actions/create-github-app-token@v2
-        id: app
-        with:
-          app-id: ${{ secrets.DEVOPS_BUDDY_APP_ID }}
-          private-key: ${{ secrets.DEVOPS_BUDDY_PRIVATE_KEY }}
-          repositories: homebrew-tap
-
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          ref: v${{ needs.release.outputs.version }}
-
-      - uses: actions/setup-go@v6
-        with:
-          go-version-file: go.mod
-          cache-dependency-path: go.sum
-
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6
-        with:
-          version: "nightly" # TODO: Remove nightly once v2.14.0 is released
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GORELEASER_CURRENT_TAG: v${{ needs.release.outputs.version }}
-          HOMEBREW_TAP_TOKEN: ${{ steps.app.outputs.token }}
+    uses: user-cube/reusable-cicd/.github/workflows/golang-cli-apps_release.yml@main
+    secrets:
+      DEVOPS_BUDDY_APP_ID: ${{ secrets.DEVOPS_BUDDY_APP_ID }}
+      DEVOPS_BUDDY_PRIVATE_KEY: ${{ secrets.DEVOPS_BUDDY_PRIVATE_KEY }}
+    with:
+      homebrew-tap-repo: "homebrew-tap"
+      go-version-file: go.mod
+      go-sum-file: go.sum
