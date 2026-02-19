@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/user-cube/kontext/compare/v1.3.1...v1.3.2) (2026-02-19)
+
+
+### Bug Fixes
+
+* **deps:** update kubernetes packages to v0.35.1 ([#10](https://github.com/user-cube/kontext/issues/10)) ([99784bd](https://github.com/user-cube/kontext/commit/99784bda079b964aa6fa7824d932c32dc1fa1ec0))
+
 ## [1.3.1](https://github.com/user-cube/kontext/compare/v1.3.0...v1.3.1) (2026-02-19)
 
 
