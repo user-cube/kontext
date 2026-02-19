@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/user-cube/kontext/compare/v1.3.0...v1.4.0) (2026-02-19)
+
+
+### Features
+
+* release process ([25e5cca](https://github.com/user-cube/kontext/commit/25e5cca37f7eab04733e027b3117f13822901fec))
+
 # [1.3.0](https://github.com/user-cube/kontext/compare/v1.2.0...v1.3.0) (2026-02-19)
 
 
