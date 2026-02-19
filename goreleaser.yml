@@ -44,7 +44,7 @@ brews:
     token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
   directory: Formula
   homepage: https://github.com/user-cube/kontext
-  description: A CLI tool for managing Kubernetes contexts
+  description: "CLI tool for managing Kubernetes contexts"
   license: Apache-2.0
   install: |
     bin.install "kontext"
