@@ -1,3 +1,10 @@
+## [1.3.4](https://github.com/user-cube/kontext/compare/v1.3.3...v1.3.4) (2026-02-24)
+
+
+### Bug Fixes
+
+* Update secrets for GitHub App integration ([#15](https://github.com/user-cube/kontext/issues/15)) ([30eb4e5](https://github.com/user-cube/kontext/commit/30eb4e5a5f111eab5a774bf288852c5e2154b88e))
+
 ## [1.3.3](https://github.com/user-cube/kontext/compare/v1.3.2...v1.3.3) (2026-02-19)
 
 
