@@ -1,3 +1,10 @@
+## [1.3.5](https://github.com/user-cube/kontext/compare/v1.3.4...v1.3.5) (2026-03-20)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/fatih/color to v1.19.0 ([#18](https://github.com/user-cube/kontext/issues/18)) ([98e062e](https://github.com/user-cube/kontext/commit/98e062e827e0e0015f475eac477d797c297b9c80))
+
 ## [1.3.4](https://github.com/user-cube/kontext/compare/v1.3.3...v1.3.4) (2026-02-24)
 
 
