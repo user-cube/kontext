@@ -1,3 +1,10 @@
+## [1.3.6](https://github.com/user-cube/kontext/compare/v1.3.5...v1.3.6) (2026-03-20)
+
+
+### Bug Fixes
+
+* **deps:** update kubernetes monorepo to v0.35.3 ([#19](https://github.com/user-cube/kontext/issues/19)) ([4a72013](https://github.com/user-cube/kontext/commit/4a720139072d3f5b463ec149591945cbea5b3614))
+
 ## [1.3.5](https://github.com/user-cube/kontext/compare/v1.3.4...v1.3.5) (2026-03-20)
 
 
